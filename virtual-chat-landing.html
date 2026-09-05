@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virtual Chat — دستیار هوش مصنوعی فارسی</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+        --bg: #050505;
+        --bg-raised: #0e0e0e;
+        --card: #141414;
+        --border: #262626;
+        --border-soft: #1c1c1c;
+        --text: #f2f2f0;
+        --text-muted: #9a9a96;
+        --text-faint: #5c5c58;
+        --accent: #e8a33d;
+        --accent-soft: rgba(232, 163, 61, 0.14);
+        --accent-2: #d9773f;
+        --accent-2-soft: rgba(217, 119, 63, 0.14);
+        --mono-user: #262626;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+    html { scrollbar-width: none; }
+    * { scrollbar-width: none; }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Vazirmatn', 'Inter', sans-serif;
+        line-height: 1.7;
+        overflow-x: hidden;
+    }
+
+    body.lang-en {
+        font-family: 'Inter', 'Vazirmatn', sans-serif;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    }
+
+    a { color: inherit; }
+
+    ::selection { background: var(--accent); color: #fff; }
+
+    :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 4px;
+    }
+
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+
+    /* ===== Top bar ===== */
+    .topbar {
+        position: sticky; top: 0; z-index: 40;
+        background: rgba(13, 15, 20, 0.82);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--border-soft);
+    }
+    .topbar-inner {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 16px 0;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.02rem; }
+    .brand-mark {
+        width: 30px; height: 30px; border-radius: 9px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.95rem; flex-shrink: 0;
+    }
+    .top-actions { display: flex; align-items: center; gap: 14px; }
+    .lang-switch {
+        display: flex; border: 1px solid var(--border); border-radius: 999px;
+        padding: 3px; gap: 2px; background: var(--bg-raised);
+    }
+    .lang-switch button {
+        border: none; background: transparent; color: var(--text-muted);
+        font-family: inherit; font-size: 0.78rem; font-weight: 600;
+        padding: 6px 14px; border-radius: 999px; cursor: pointer;
+        transition: background 0.18s, color 0.18s;
+    }
+    .lang-switch button.active { background: var(--accent); color: #fff; }
+    .cta-small {
+        background: var(--text); color: #0d0f14; border: none;
+        font-family: inherit; font-weight: 700; font-size: 0.82rem;
+        padding: 9px 18px; border-radius: 999px; cursor: pointer;
+        transition: transform 0.15s, opacity 0.15s;
+        white-space: nowrap;
+    }
+    .cta-small:hover { opacity: 0.88; }
+    .cta-small:active { transform: scale(0.97); }
+
+    /* ===== Hero ===== */
+    .hero {
+        padding: 76px 0 60px;
+        display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px;
+        align-items: center;
+    }
+    .hero-kicker {
+        color: var(--accent); font-weight: 600; font-size: 0.86rem;
+        margin-bottom: 18px; display: block;
+    }
+    .hero h1 {
+        font-size: clamp(2.1rem, 4.4vw, 3.15rem);
+        line-height: 1.28;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        margin-bottom: 22px;
+    }
+    .hero p.lead {
+        color: var(--text-muted); font-size: 1.06rem; max-width: 46ch;
+        margin-bottom: 32px;
+    }
+    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn-primary {
+        background: var(--accent); color: #fff; border: none;
+        font-family: inherit; font-weight: 700; font-size: 0.95rem;
+        padding: 14px 26px; border-radius: 12px; cursor: pointer;
+        transition: transform 0.15s, background 0.15s;
+    }
+    .btn-primary:hover { background: #6e60ec; }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-ghost {
+        background: transparent; color: var(--text); border: 1px solid var(--border);
+        font-family: inherit; font-weight: 600; font-size: 0.95rem;
+        padding: 14px 26px; border-radius: 12px; cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+    }
+    .btn-ghost:hover { border-color: var(--text-faint); background: var(--bg-raised); }
+
+    /* Hero visual: live chat mockup */
+    .hero-visual {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: 0 30px 80px -30px rgba(0,0,0,0.6);
+    }
+    .hero-visual-head {
+        display: flex; align-items: center; gap: 8px;
+        padding-bottom: 16px; margin-bottom: 16px;
+        border-bottom: 1px solid var(--border-soft);
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); }
+    .hero-visual-head span { font-size: 0.76rem; color: var(--text-faint); margin-inline-start: auto; }
+    .bubble {
+        max-width: 82%; padding: 11px 15px; border-radius: 14px;
+        font-size: 0.88rem; margin-bottom: 12px;
+        opacity: 0; transform: translateY(6px);
+        animation: bubbleIn 0.5s ease forwards;
+    }
+    .bubble.user {
+        background: var(--mono-user); margin-inline-start: auto; border-bottom-left-radius: 4px;
+    }
+    body.lang-en .bubble.user { border-bottom-left-radius: 14px; border-bottom-right-radius: 4px; }
+    .bubble.bot {
+        background: transparent; border: none;
+        padding-inline-start: 0; padding-inline-end: 0;
+        color: var(--text);
+    }
+    body.lang-en .bubble.bot { border-bottom-right-radius: 14px; border-bottom-left-radius: 4px; }
+    .bubble:nth-child(2) { animation-delay: 0.15s; }
+    .bubble:nth-child(3) { animation-delay: 0.65s; }
+    .bubble:nth-child(4) { animation-delay: 1.15s; }
+    .bubble:nth-child(5) { animation-delay: 1.65s; }
+    @keyframes bubbleIn { to { opacity: 1; transform: translateY(0); } }
+    .typing-dots { display: inline-flex; gap: 4px; padding: 4px 0; }
+    .typing-dots span {
+        width: 5px; height: 5px; border-radius: 50%; background: var(--text-faint);
+        animation: dotb 1.1s infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes dotb { 0%, 80%, 100% { opacity: 0.35; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+
+    @media (max-width: 860px) {
+        .hero { grid-template-columns: 1fr; padding-top: 48px; gap: 40px; }
+        .hero p.lead { max-width: none; }
+    }
+
+    /* ===== Section shared ===== */
+    section { padding: 72px 0; }
+    .section-head { margin-bottom: 44px; max-width: 60ch; }
+    .section-head .eyebrow { color: var(--accent-2); font-weight: 600; font-size: 0.84rem; display: block; margin-bottom: 10px; }
+    .section-head h2 { font-size: clamp(1.5rem, 2.6vw, 2rem); font-weight: 800; line-height: 1.35; margin-bottom: 12px; }
+    .section-head p { color: var(--text-muted); font-size: 0.98rem; }
+
+    /* ===== Capabilities: horizontal divided list ===== */
+    .cap-list { border-top: 1px solid var(--border-soft); }
+    .cap-row {
+        display: grid; grid-template-columns: 220px 1fr;
+        gap: 32px; padding: 28px 0;
+        border-bottom: 1px solid var(--border-soft);
+    }
+    .cap-row .cap-name { display: flex; align-items: flex-start; gap: 12px; }
+    .cap-icon {
+        width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+        background: var(--accent-soft); color: var(--accent);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.05rem;
+    }
+    .cap-row:nth-child(even) .cap-icon { background: var(--accent-2-soft); color: var(--accent-2); }
+    .cap-icon svg { width: 18px; height: 18px; }
+    .cap-name strong { font-size: 1.02rem; font-weight: 700; display: block; }
+    .cap-body p { color: var(--text-muted); font-size: 0.93rem; max-width: 62ch; }
+    .cap-body .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .tag {
+        font-size: 0.74rem; color: var(--text-muted); border: 1px solid var(--border);
+        padding: 4px 10px; border-radius: 999px;
+    }
+    @media (max-width: 700px) {
+        .cap-row { grid-template-columns: 1fr; gap: 12px; }
+    }
+
+    /* ===== Live call spotlight ===== */
+    .spotlight {
+        background: linear-gradient(145deg, var(--card), var(--bg-raised));
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 46px;
+        display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+    }
+    .spotlight h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 14px; }
+    .spotlight p { color: var(--text-muted); font-size: 0.96rem; margin-bottom: 20px; }
+    .spotlight ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .spotlight li { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text); }
+    .spotlight li::before {
+        content: ''; width: 6px; height: 6px; border-radius: 50%;
+        background: var(--accent-2); flex-shrink: 0;
+    }
+    .orb-wrap { display: flex; align-items: center; justify-content: center; }
+    .orb {
+        width: 160px; height: 160px; border-radius: 50%;
+        background: radial-gradient(circle at 32% 28%, #fff3, transparent 55%), linear-gradient(140deg, var(--accent), var(--accent-2));
+        position: relative;
+        animation: orbBreathe 3.4s ease-in-out infinite;
+    }
+    .orb::after {
+        content: ''; position: absolute; inset: -14px; border-radius: 50%;
+        border: 1.5px solid var(--accent-2); opacity: 0.35;
+        animation: ringPulse 2.2s ease-out infinite;
+    }
+    @keyframes orbBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes ringPulse { 0% { transform: scale(0.9); opacity: 0.5; } 100% { transform: scale(1.35); opacity: 0; } }
+    @media (max-width: 780px) {
+        .spotlight { grid-template-columns: 1fr; padding: 32px 24px; text-align: center; }
+        .spotlight li { justify-content: center; }
+        .orb-wrap { order: -1; }
+    }
+
+    /* ===== Under the hood ===== */
+    .stack-grid {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+        background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 16px; overflow: hidden;
+    }
+    .stack-cell { background: var(--card); padding: 26px 20px; }
+    .stack-cell .num { font-size: 0.76rem; color: var(--text-faint); font-weight: 600; margin-bottom: 10px; }
+    .stack-cell strong { display: block; font-size: 0.96rem; margin-bottom: 8px; }
+    .stack-cell p { color: var(--text-muted); font-size: 0.82rem; }
+    @media (max-width: 860px) {
+        .stack-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+        .stack-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ===== Final CTA ===== */
+    .final-cta {
+        text-align: center; padding: 90px 0 70px;
+    }
+    .final-cta h2 { font-size: clamp(1.7rem, 3.4vw, 2.4rem); font-weight: 800; margin-bottom: 16px; }
+    .final-cta p { color: var(--text-muted); margin-bottom: 30px; max-width: 50ch; margin-inline: auto; }
+
+    footer {
+        border-top: 1px solid var(--border-soft);
+        padding: 28px 0; color: var(--text-faint); font-size: 0.8rem;
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    }
+
+    [data-i18n], [data-i18n-html] { transition: opacity 0.15s; }
+
+    .reveal {
+        opacity: 0;
+        transform: translateY(48px) scale(0.96);
+        filter: blur(6px);
+        transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.in-view { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    @media (prefers-reduced-motion: reduce) {
+        .reveal { opacity: 1; transform: none; filter: none; transition: none; }
+    }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="wrap topbar-inner">
+        <div class="brand">
+            <span class="brand-mark">✦</span>
+            <span>Virtual Chat</span>
+        </div>
+        <div class="top-actions">
+            <div class="lang-switch" role="group" aria-label="Language">
+                <button type="button" id="btnFa" class="active" onclick="setLang('fa')">فارسی</button>
+                <button type="button" id="btnEn" onclick="setLang('en')">English</button>
+            </div>
+            <button class="cta-small" data-i18n="nav.cta" onclick="goToApp()">شروع گفتگو</button>
+        </div>
+    </div>
+</div>
+
+<div class="wrap hero">
+    <div>
+        <span class="hero-kicker" data-i18n="hero.kicker">دستیار هوش مصنوعی فارسی</span>
+        <h1 data-i18n="hero.title">یک دستیار هوشمند، برای نوشتن، ساختن و حرف زدن</h1>
+        <p class="lead" data-i18n="hero.lead">Virtual Chat یک اپلیکیشن چت هوش مصنوعیه که علاوه بر گفتگوی متنی، می‌تونه باهات صحبت زنده کنه، فایل و کد رو ویرایش کنه، و توی وب جستجو کنه — همه در یک رابط ساده.</p>
+        <div class="hero-ctas">
+            <button class="btn-primary" data-i18n="hero.ctaPrimary" onclick="goToApp()">همین حالا امتحان کن</button>
+            <button class="btn-ghost" data-i18n="hero.ctaSecondary" onclick="document.getElementById('capabilities').scrollIntoView({behavior:'smooth'})">قابلیت‌ها را ببین</button>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <div class="hero-visual-head">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span data-i18n="hero.visualLive">گفتگوی زنده</span>
+        </div>
+        <div class="bubble user" data-i18n="hero.b1">یه تابع پایتون برام بنویس که فایل CSV رو بخونه</div>
+        <div class="bubble bot" data-i18n="hero.b2">حتماً 👋 این هم یه نسخه با pandas که هدر رو هم تشخیص می‌ده:</div>
+        <div class="bubble user" data-i18n="hero.b3">می‌تونی همینو با صدا هم توضیح بدی؟</div>
+        <div class="bubble bot"><span class="typing-dots"><span></span><span></span><span></span></span></div>
+    </div>
+</div>
+
+<section class="wrap" id="capabilities">
+    <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="cap.eyebrow">قابلیت‌ها</span>
+        <h2 data-i18n="cap.title">همه‌چیزی که یک دستیار هوشمند باید داشته باشد</h2>
+        <p data-i18n="cap.lead">از نوشتن و کدزنی گرفته تا صحبت زنده و جستجوی وب — بدون نیاز به چند اپ جدا.</p>
+    </div>
+
+    <div class="cap-list">
+        <div class="cap-row reveal">
+            <div class="cap-name">
+                <span class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <strong data-i18n="cap.chat.name">گفتگوی متنی هوشمند</strong>
+            </div>
+            <div class="cap-body">
+                <p data-i18n="cap.chat.desc">پاسخ‌ها به‌صورت زنده و کلمه‌به‌کلمه روی صفحه ظاهر می‌شن، دقیقاً مثل این‌که کسی داره برات تایپ می‌کنه. می‌تونی پیام رو ویرایش کنی، جواب رو دوباره بسازی، یا چند گفتگوی جدا رو هم‌زمان باز نگه‌داری.</p>
+                <div class="tags">
+                    <span class="tag" data-i18n="cap.chat.tag1">پاسخ زنده (استریم)</span>
+                    <span class="tag" data-i18n="cap.chat.tag2">ویرایش پیام</span>
+                    <span class="tag" data-i18n="cap.chat.tag3">تاریخچه‌ی نامحدود</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-row reveal">
+            <div class="cap-name">
+                <span class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 19v3M8 22h8"/></svg></span>
+                <strong data-i18n="cap.voice.name">تماس صوتی زنده</strong>
+            </div>
+            <div class="cap-body">
+                <p data-i18n="cap.voice.desc">به‌جای تایپ کردن، مستقیم باهاش حرف بزن. صدا رو با لحن‌های مختلف انتخاب کن و زبان مکالمه رو مشخص کن — گفتگو مثل یک تماس تلفنی واقعی، بدون تأخیر محسوس، جریان پیدا می‌کنه.</p>
+                <div class="tags">
+                    <span class="tag" data-i18n="cap.voice.tag1">چند صدا و لحن</span>
+                    <span class="tag" data-i18n="cap.voice.tag2">چند زبانه</span>
+                    <span class="tag" data-i18n="cap.voice.tag3">رونویسی هم‌زمان</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-row reveal">
+            <div class="cap-name">
+                <span class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+                <strong data-i18n="cap.code.name">نوشتن و ویرایش کد</strong>
+            </div>
+            <div class="cap-body">
+                <p data-i18n="cap.code.desc">می‌تونه فایل کد بسازه، بخشی از یک فایل موجود رو پیدا و اصلاح کنه، یا تغییرات رو قبل از اعمال برات نشون بده — نه فقط یک بلوک کد بی‌ربط به بقیه‌ی پروژه.</p>
+                <div class="tags">
+                    <span class="tag" data-i18n="cap.code.tag1">ویرایش هدفمند</span>
+                    <span class="tag" data-i18n="cap.code.tag2">پیش‌نمایش تغییر</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-row reveal">
+            <div class="cap-name">
+                <span class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+                <strong data-i18n="cap.search.name">جستجوی زنده در وب</strong>
+            </div>
+            <div class="cap-body">
+                <p data-i18n="cap.search.desc">برای سوال‌هایی که جواب‌شون همین امروز عوض می‌شه (قیمت، اخبار، رویدادها)، خودش تشخیص می‌ده که باید جستجو کنه و نتیجه رو با منبع بهت نشون می‌ده — نه یک حدس قدیمی.</p>
+                <div class="tags">
+                    <span class="tag" data-i18n="cap.search.tag1">تشخیص خودکار نیاز به جستجو</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-row reveal">
+            <div class="cap-name">
+                <span class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></span>
+                <strong data-i18n="cap.files.name">فایل و تصویر</strong>
+            </div>
+            <div class="cap-body">
+                <p data-i18n="cap.files.desc">عکس، سند یا فایل کد رو ضمیمه کن و درباره‌ش سوال بپرس؛ چه بخوای متنش رو بفهمی، چه ازش برات تحلیل یا خلاصه بسازه.</p>
+                <div class="tags">
+                    <span class="tag" data-i18n="cap.files.tag1">تصویر</span>
+                    <span class="tag" data-i18n="cap.files.tag2">سند و کد</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cap-row reveal">
+            <div class="cap-name">
+                <span class="cap-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6.5 6.5 0 0 0-12.6-2A5 5 0 0 0 6 18h11.5z"/></svg></span>
+                <strong data-i18n="cap.sync.name">حساب کاربری و همگام‌سازی</strong>
+            </div>
+            <div class="cap-body">
+                <p data-i18n="cap.sync.desc">بدون حساب هم می‌تونی استفاده کنی. اگه وارد بشی، گفتگوهات بین گوشی و کامپیوترت همگام می‌مونه — با ورود امن از طریق کد تایید ایمیلی، نه پسورد ذخیره‌شده‌ی خام.</p>
+                <div class="tags">
+                    <span class="tag" data-i18n="cap.sync.tag1">حالت مهمان</span>
+                    <span class="tag" data-i18n="cap.sync.tag2">ورود امن با ایمیل</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="wrap">
+    <div class="spotlight reveal">
+        <div>
+            <h3 data-i18n="spot.title">حرف بزن، نه فقط تایپ کن</h3>
+            <p data-i18n="spot.desc">تماس صوتی زنده‌ی Virtual Chat برای وقتی طراحی شده که دست‌هات بندن یا فقط راحت‌تری حرف بزنی. مکالمه پیوسته جریان داره — می‌تونی وسط حرفش بپری، موضوع رو عوض کنی، یا همون‌جا ازش بخوای که خداحافظی کنه و تماس رو قطع کنه.</p>
+            <ul>
+                <li data-i18n="spot.li1">۳۰ صدای مختلف با لحن‌های متفاوت</li>
+                <li data-i18n="spot.li2">امکان قطع حرفش وسط جمله، مثل یک مکالمه‌ی واقعی</li>
+                <li data-i18n="spot.li3">ادامه‌ی گفتگوی متنی قبلی، بدون از نو توضیح دادن</li>
+            </ul>
+        </div>
+        <div class="orb-wrap"><div class="orb"></div></div>
+    </div>
+</section>
+
+<section class="wrap">
+    <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="stack.eyebrow">زیرساخت</span>
+        <h2 data-i18n="stack.title">ساخته‌شده برای پایداری</h2>
+        <p data-i18n="stack.lead">هر بخش از Virtual Chat یک وظیفه‌ی مشخص داره، تا وقتی یکی کند بشه یا از دسترس خارج بشه، بقیه سرپا بمونن.</p>
+    </div>
+    <div class="stack-grid">
+        <div class="stack-cell reveal" style="transition-delay:0s">
+            <div class="num">01</div>
+            <strong data-i18n="stack.c1.name">موتور گفتگو</strong>
+            <p data-i18n="stack.c1.desc">پردازش پیام، ابزارها، و پاسخ زنده</p>
+        </div>
+        <div class="stack-cell reveal" style="transition-delay:0.08s">
+            <div class="num">02</div>
+            <strong data-i18n="stack.c2.name">هسته‌ی صوتی</strong>
+            <p data-i18n="stack.c2.desc">اتصال پایدار برای تماس‌های زنده</p>
+        </div>
+        <div class="stack-cell reveal" style="transition-delay:0.16s">
+            <div class="num">03</div>
+            <strong data-i18n="stack.c3.name">حافظه‌ی ابری</strong>
+            <p data-i18n="stack.c3.desc">حساب کاربری و گفتگوهای همگام‌شده</p>
+        </div>
+        <div class="stack-cell reveal" style="transition-delay:0.24s">
+            <div class="num">04</div>
+            <strong data-i18n="stack.c4.name">اطلاع‌رسانی</strong>
+            <p data-i18n="stack.c4.desc">تغییرات و رفع‌اشکال‌های تازه</p>
+        </div>
+    </div>
+</section>
+
+<section class="wrap final-cta reveal">
+    <h2 data-i18n="final.title">آماده‌ای شروع کنی؟</h2>
+    <p data-i18n="final.desc">بدون نیاز به نصب یا ثبت‌نام، همین الان اولین گفتگوت رو با Virtual Chat شروع کن.</p>
+    <button class="btn-primary" data-i18n="final.cta" onclick="goToApp()">رفتن به Virtual Chat</button>
+</section>
+
+<footer class="wrap">
+    <span>Virtual Chat</span>
+    <span data-i18n="footer.note">این صفحه فقط برای معرفی قابلیت‌هاست.</span>
+</footer>
+
+<script>
+const translations = {
+    fa: {
+        'nav.cta': 'شروع گفتگو',
+        'hero.kicker': 'دستیار هوش مصنوعی فارسی',
+        'hero.title': 'یک دستیار هوشمند، برای نوشتن، ساختن و حرف زدن',
+        'hero.lead': 'Virtual Chat یک اپلیکیشن چت هوش مصنوعیه که علاوه بر گفتگوی متنی، می‌تونه باهات صحبت زنده کنه، فایل و کد رو ویرایش کنه، و توی وب جستجو کنه — همه در یک رابط ساده.',
+        'hero.ctaPrimary': 'همین حالا امتحان کن',
+        'hero.ctaSecondary': 'قابلیت‌ها را ببین',
+        'hero.visualLive': 'گفتگوی زنده',
+        'hero.b1': 'یه تابع پایتون برام بنویس که فایل CSV رو بخونه',
+        'hero.b2': 'حتماً 👋 این هم یه نسخه با pandas که هدر رو هم تشخیص می‌ده:',
+        'hero.b3': 'می‌تونی همینو با صدا هم توضیح بدی؟',
+        'cap.eyebrow': 'قابلیت‌ها',
+        'cap.title': 'همه‌چیزی که یک دستیار هوشمند باید داشته باشد',
+        'cap.lead': 'از نوشتن و کدزنی گرفته تا صحبت زنده و جستجوی وب — بدون نیاز به چند اپ جدا.',
+        'cap.chat.name': 'گفتگوی متنی هوشمند',
+        'cap.chat.desc': 'پاسخ‌ها به‌صورت زنده و کلمه‌به‌کلمه روی صفحه ظاهر می‌شن، دقیقاً مثل این‌که کسی داره برات تایپ می‌کنه. می‌تونی پیام رو ویرایش کنی، جواب رو دوباره بسازی، یا چند گفتگوی جدا رو هم‌زمان باز نگه‌داری.',
+        'cap.chat.tag1': 'پاسخ زنده (استریم)',
+        'cap.chat.tag2': 'ویرایش پیام',
+        'cap.chat.tag3': 'تاریخچه‌ی نامحدود',
+        'cap.voice.name': 'تماس صوتی زنده',
+        'cap.voice.desc': 'به‌جای تایپ کردن، مستقیم باهاش حرف بزن. صدا رو با لحن‌های مختلف انتخاب کن و زبان مکالمه رو مشخص کن — گفتگو مثل یک تماس تلفنی واقعی، بدون تأخیر محسوس، جریان پیدا می‌کنه.',
+        'cap.voice.tag1': 'چند صدا و لحن',
+        'cap.voice.tag2': 'چند زبانه',
+        'cap.voice.tag3': 'رونویسی هم‌زمان',
+        'cap.code.name': 'نوشتن و ویرایش کد',
+        'cap.code.desc': 'می‌تونه فایل کد بسازه، بخشی از یک فایل موجود رو پیدا و اصلاح کنه، یا تغییرات رو قبل از اعمال برات نشون بده — نه فقط یک بلوک کد بی‌ربط به بقیه‌ی پروژه.',
+        'cap.code.tag1': 'ویرایش هدفمند',
+        'cap.code.tag2': 'پیش‌نمایش تغییر',
+        'cap.search.name': 'جستجوی زنده در وب',
+        'cap.search.desc': 'برای سوال‌هایی که جواب‌شون همین امروز عوض می‌شه (قیمت، اخبار، رویدادها)، خودش تشخیص می‌ده که باید جستجو کنه و نتیجه رو با منبع بهت نشون می‌ده — نه یک حدس قدیمی.',
+        'cap.search.tag1': 'تشخیص خودکار نیاز به جستجو',
+        'cap.files.name': 'فایل و تصویر',
+        'cap.files.desc': 'عکس، سند یا فایل کد رو ضمیمه کن و درباره‌ش سوال بپرس؛ چه بخوای متنش رو بفهمی، چه ازش برات تحلیل یا خلاصه بسازه.',
+        'cap.files.tag1': 'تصویر',
+        'cap.files.tag2': 'سند و کد',
+        'cap.sync.name': 'حساب کاربری و همگام‌سازی',
+        'cap.sync.desc': 'بدون حساب هم می‌تونی استفاده کنی. اگه وارد بشی، گفتگوهات بین گوشی و کامپیوترت همگام می‌مونه — با ورود امن از طریق کد تایید ایمیلی، نه پسورد ذخیره‌شده‌ی خام.',
+        'cap.sync.tag1': 'حالت مهمان',
+        'cap.sync.tag2': 'ورود امن با ایمیل',
+        'spot.title': 'حرف بزن، نه فقط تایپ کن',
+        'spot.desc': 'تماس صوتی زنده‌ی Virtual Chat برای وقتی طراحی شده که دست‌هات بندن یا فقط راحت‌تری حرف بزنی. مکالمه پیوسته جریان داره — می‌تونی وسط حرفش بپری، موضوع رو عوض کنی، یا همون‌جا ازش بخوای که خداحافظی کنه و تماس رو قطع کنه.',
+        'spot.li1': '۳۰ صدای مختلف با لحن‌های متفاوت',
+        'spot.li2': 'امکان قطع حرفش وسط جمله، مثل یک مکالمه‌ی واقعی',
+        'spot.li3': 'ادامه‌ی گفتگوی متنی قبلی، بدون از نو توضیح دادن',
+        'stack.eyebrow': 'زیرساخت',
+        'stack.title': 'ساخته‌شده برای پایداری',
+        'stack.lead': 'هر بخش از Virtual Chat یک وظیفه‌ی مشخص داره، تا وقتی یکی کند بشه یا از دسترس خارج بشه، بقیه سرپا بمونن.',
+        'stack.c1.name': 'موتور گفتگو',
+        'stack.c1.desc': 'پردازش پیام، ابزارها، و پاسخ زنده',
+        'stack.c2.name': 'هسته‌ی صوتی',
+        'stack.c2.desc': 'اتصال پایدار برای تماس‌های زنده',
+        'stack.c3.name': 'حافظه‌ی ابری',
+        'stack.c3.desc': 'حساب کاربری و گفتگوهای همگام‌شده',
+        'stack.c4.name': 'اطلاع‌رسانی',
+        'stack.c4.desc': 'تغییرات و رفع‌اشکال‌های تازه',
+        'final.title': 'آماده‌ای شروع کنی؟',
+        'final.desc': 'بدون نیاز به نصب یا ثبت‌نام، همین الان اولین گفتگوت رو با Virtual Chat شروع کن.',
+        'final.cta': 'رفتن به Virtual Chat',
+        'footer.note': 'این صفحه فقط برای معرفی قابلیت‌هاست.'
+    },
+    en: {
+        'nav.cta': 'Start chatting',
+        'hero.kicker': 'AI assistant, built for Persian speakers',
+        'hero.title': 'One assistant to write, build, and talk things through',
+        'hero.lead': 'Virtual Chat is an AI chat app that goes beyond text — talk to it live by voice, have it edit code and files, and let it search the web for anything current. All in one simple interface.',
+        'hero.ctaPrimary': 'Try it now',
+        'hero.ctaSecondary': 'See capabilities',
+        'hero.visualLive': 'Live conversation',
+        'hero.b1': 'Write me a Python function that reads a CSV file',
+        'hero.b2': 'Sure 👋 here\'s a version using pandas that also detects the header row:',
+        'hero.b3': 'Can you explain that one out loud too?',
+        'cap.eyebrow': 'Capabilities',
+        'cap.title': 'Everything a smart assistant should do',
+        'cap.lead': 'From writing and coding to live voice calls and web search — no need for five separate apps.',
+        'cap.chat.name': 'Smart text chat',
+        'cap.chat.desc': 'Replies stream in live, word by word, just like someone typing to you in real time. Edit a message, regenerate a reply, or keep several separate conversations going at once.',
+        'cap.chat.tag1': 'Live streaming replies',
+        'cap.chat.tag2': 'Edit messages',
+        'cap.chat.tag3': 'Unlimited history',
+        'cap.voice.name': 'Live voice calls',
+        'cap.voice.desc': 'Skip the typing and just talk. Pick a voice and tone that fits, choose the conversation language — and it flows like an actual phone call, with no noticeable lag.',
+        'cap.voice.tag1': 'Multiple voices & tones',
+        'cap.voice.tag2': 'Multilingual',
+        'cap.voice.tag3': 'Live transcript',
+        'cap.code.name': 'Write and edit code',
+        'cap.code.desc': 'It can create code files, find and fix a specific part of an existing file, or show you the change before applying it — not just a disconnected code block.',
+        'cap.code.tag1': 'Targeted edits',
+        'cap.code.tag2': 'Change preview',
+        'cap.search.name': 'Live web search',
+        'cap.search.desc': 'For questions with answers that change day to day — prices, news, events — it knows to search the web and shows you the result with a source, instead of an outdated guess.',
+        'cap.search.tag1': 'Auto-detects when search is needed',
+        'cap.files.name': 'Files and images',
+        'cap.files.desc': 'Attach a photo, document, or code file and ask about it — whether you need it read, analyzed, or summarized.',
+        'cap.files.tag1': 'Images',
+        'cap.files.tag2': 'Documents & code',
+        'cap.sync.name': 'Account and sync',
+        'cap.sync.desc': 'You can use it without an account. Sign in, and your chats stay in sync between your phone and computer — with secure sign-in via an emailed code, not a stored plain password.',
+        'cap.sync.tag1': 'Guest mode',
+        'cap.sync.tag2': 'Secure email sign-in',
+        'spot.title': 'Talk, don\'t just type',
+        'spot.desc': 'Live voice calls in Virtual Chat are built for when your hands are busy, or you\'d simply rather talk. The conversation flows continuously — interrupt it mid-sentence, change the subject, or just ask it to say goodbye and end the call.',
+        'spot.li1': '30 different voices and tones',
+        'spot.li2': 'Interrupt it mid-sentence, like a real conversation',
+        'spot.li3': 'Picks up your earlier text chat without re-explaining',
+        'stack.eyebrow': 'Infrastructure',
+        'stack.title': 'Built for reliability',
+        'stack.lead': 'Every part of Virtual Chat does one job, so if one slows down or goes offline, the rest keeps running.',
+        'stack.c1.name': 'Chat engine',
+        'stack.c1.desc': 'Message handling, tools, live replies',
+        'stack.c2.name': 'Voice core',
+        'stack.c2.desc': 'Stable connection for live calls',
+        'stack.c3.name': 'Cloud memory',
+        'stack.c3.desc': 'Accounts and synced conversations',
+        'stack.c4.name': 'Notifications',
+        'stack.c4.desc': 'Fresh updates and bug fixes',
+        'final.title': 'Ready to start?',
+        'final.desc': 'No install, no signup required — start your first conversation with Virtual Chat right now.',
+        'final.cta': 'Go to Virtual Chat',
+        'footer.note': 'This page is for feature reference only.'
+    }
+};
+
+function setLang(lang) {
+    document.documentElement.lang = lang === 'fa' ? 'fa' : 'en';
+    document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+    document.body.classList.toggle('lang-en', lang === 'en');
+    document.getElementById('btnFa').classList.toggle('active', lang === 'fa');
+    document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key] !== undefined) el.textContent = translations[lang][key];
+    });
+    try { localStorage.setItem('vc_landing_lang', lang); } catch (_) {}
+}
+
+function goToApp() {
+    window.open('https://virtual-chat-seven.vercel.app', '_blank', 'noopener');
+}
+
+(function init() {
+    let saved = 'fa';
+    try { saved = localStorage.getItem('vc_landing_lang') || 'fa'; } catch (_) {}
+    setLang(saved);
+})();
+
+(function initReveal() {
+    const items = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window) || !items.length) {
+        items.forEach(el => el.classList.add('in-view'));
+        return;
+    }
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('in-view');
+                io.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    items.forEach(el => io.observe(el));
+})();
+</script>
+
+</body>
+</html>
