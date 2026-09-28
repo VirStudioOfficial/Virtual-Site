@@ -6,10 +6,12 @@
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <title>Virtual Chat — دستیار هوش مصنوعی فارسی</title>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 /* =========================================================
    Theme tokens
@@ -1122,6 +1124,87 @@ main, .topbar { position: relative; }
     .orb-wrap::before { animation: none; }
 }
 
+/* =========================================================
+   PERFORMANCE LAYER  (mobile / low-power friendly)
+   Desktop look is unchanged; heavy effects are trimmed on
+   touch devices and small screens.
+========================================================= */
+
+/* smooth-scroll fights with touch inertia scrolling; keep it desktop-only */
+@media (hover: none), (max-width: 920px) {
+    html { scroll-behavior: auto; }
+}
+
+/* cheap section skipping: off-screen sections are not laid out / painted */
+section.wrap:not(:first-of-type),
+footer {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
+}
+
+/* the fixed backdrop layers never change size: isolate them */
+.bg-grid, .bg-orb, .cursor-glow, #galaxy { contain: strict; }
+
+/* ---- Phones, tablets, and anything without a real mouse ---- */
+@media (hover: none), (max-width: 720px) {
+
+    /* 1. blur() filters are extremely expensive on mobile GPUs -> drop them,
+          keep the fade + rise, which is compositor-only. */
+    .reveal,
+    .hero-copy > *,
+    .hero h1.split .w { filter: none !important; }
+    .hero h1.split .w { transform: translateY(.5em); }   /* no 3D rotateX */
+
+    /* 2. background orbs: blurred, fixed and animated = worst combo.
+          Replace with a static soft gradient (no filter, no animation). */
+    .bg-orb, .bg-orb.o1, .bg-orb.o2 { filter: none; animation: none !important; will-change: auto; }
+    .bg-orb.o1 { width: 420px; height: 420px; margin-left: -210px; }
+    .bg-orb.o2 { width: 300px; height: 300px; }
+
+    /* 3. sticky header: backdrop-filter re-blurs every scroll frame.
+          Use a nearly opaque background instead. */
+    .topbar {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        background: color-mix(in srgb, var(--bg) 96%, transparent);
+    }
+
+    /* 4. endless decorative loops: stop them (they still look fine static) */
+    .hero-copy > * { animation-name: heroInLite; }
+    .hero-visual-wrap { animation-name: heroInLite; }
+    .hero h1 { animation: heroInLite .9s cubic-bezier(.16,1,.3,1) .15s forwards !important; }
+    .hero h1.split .w { animation-name: wordInLite; }
+    .hero h1.split .w.shim { animation: wordInLite .9s cubic-bezier(.16,1,.3,1) forwards !important; }
+    .hero-kicker::before,
+    .hero-visual .composer,
+    .orb::before, .orb::after,
+    .orb-wrap::before,
+    .veil-mark { animation: none !important; }
+    .mic::after { animation-duration: 3s; }
+
+    /* 5. no parallax on touch (it forced style recalcs on every scroll event) */
+    .bg-grid, .hero-visual-wrap { transform: none !important; }
+
+    /* 6. no 3D context / will-change on the mockup */
+    .hero-visual { transform-style: flat; will-change: auto; }
+
+    /* 7. lighter shadows */
+    .hero-visual:hover { box-shadow: var(--shadow); }
+}
+
+@keyframes heroInLite { to { opacity: 1; transform: none; } }
+@keyframes wordInLite { to { opacity: 1; transform: none; } }
+
+/* hero scrolled away: freeze its endless loops (saves battery, zero visual change) */
+.hero-off .hero-kicker::before,
+.hero-off .hero-visual .composer,
+.hero-off .mic::after,
+.hero-off .hero h1,
+.hero-off .hero h1.split .w.shim { animation-play-state: paused !important; }
+
+/* only hint will-change while it is actually needed */
+.btn-primary, .btn-ghost { will-change: auto; }
+
 </style>
 </head>
 
@@ -2089,15 +2172,6 @@ function initTilt() {
                 `perspective(1000px) rotateX(${(-py * 9).toFixed(2)}deg) rotateY(${(px * 9).toFixed(2)}deg) translateY(-4px)`;
         });
         card.addEventListener('pointerleave', reset);
-    } else if (window.DeviceOrientationEvent && !FINE_POINTER) {
-        /* phones: gentle tilt following the device orientation, where allowed */
-        addEventListener('deviceorientation', e => {
-            if (e.gamma == null || e.beta == null) return;
-            const gx = Math.max(-1, Math.min(1, e.gamma / 30));
-            const gy = Math.max(-1, Math.min(1, (e.beta - 45) / 30));
-            card.style.transform =
-                `perspective(1000px) rotateX(${(-gy * 5).toFixed(2)}deg) rotateY(${(gx * 5).toFixed(2)}deg)`;
-        }, { passive: true });
     }
 }
 
@@ -2139,6 +2213,18 @@ function playChat() {
     }, 11700));
 }
 
+/* pause every infinite CSS loop + the chat replay while the hero is off-screen */
+function initOffscreenPause() {
+    const hero = document.querySelector('.hero');
+    if (!hero || !('IntersectionObserver' in window)) return;
+    new IntersectionObserver(entries => {
+        const on = entries[0].isIntersecting;
+        document.documentElement.classList.toggle('hero-off', !on);
+        if (on) { if (!chatTimers.length) playChat(); }
+        else { chatTimers.forEach(clearTimeout); chatTimers = []; }
+    }, { threshold: 0 }).observe(hero);
+}
+
 /* scroll: progress bar + parallax variable */
 function initScroll() {
     const bar = document.getElementById('progress');
@@ -2148,7 +2234,7 @@ function initScroll() {
         const max = document.documentElement.scrollHeight - innerHeight;
         const y   = scrollY;
         bar.style.setProperty('--p', max > 0 ? (y / max).toFixed(4) : 0);
-        document.documentElement.style.setProperty('--scroll', y);
+        if (FINE_POINTER) document.documentElement.style.setProperty('--scroll', y);
         ticking = false;
     };
 
@@ -2206,28 +2292,36 @@ function initCounters() {
 
 function initGalaxy() {
     const cv = document.getElementById('galaxy');
-    if (!cv || REDUCED) return;
+    if (!cv) return;
     const ctx = cv.getContext('2d');
+    const STATIC = REDUCED;          // reduced-motion: draw a still sky once, no animation
 
-    const DPR   = Math.min(window.devicePixelRatio || 1, 2);
-    const MOBILE = matchMedia('(max-width: 720px)').matches;
+    const MOBILE = matchMedia('(max-width: 720px)').matches || !FINE_POINTER;
     const LOW    = (navigator.hardwareConcurrency || 8) <= 4;
-    const N     = MOBILE ? 520 : (LOW ? 950 : 1500);   // particle count
+    const DPR   = MOBILE ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);   // dots are tiny: 1x is visually identical on phones
+    const N     = MOBILE ? 260 : (LOW ? 800 : 1300);   // particle count
+    const FRAME_MS = MOBILE ? 1000 / 30 : 0;           // phones: 30fps cap (half the CPU/GPU work)
     const ARMS  = 3;
 
     let W = 0, H = 0;
     const mouse = { x: -9999, y: -9999, on: false };
     const pts = [];
 
-    function isLight() { return matchMedia('(prefers-color-scheme: light)').matches; }
+    const _lm = matchMedia('(prefers-color-scheme: light)');
+    let _light = _lm.matches;
+    (_lm.addEventListener ? _lm.addEventListener.bind(_lm, 'change') : _lm.addListener.bind(_lm))(e => { _light = e.matches; });
+    function isLight() { return _light; }
 
     function resize() {
-        W = innerWidth; H = innerHeight;
+        const nw = innerWidth, nh = innerHeight;
+        /* mobile browsers fire resize while the URL bar hides; ignore small height-only jumps */
+        if (W && nw === W && Math.abs(nh - H) < 120) return;
+        W = nw; H = nh;
         cv.width  = W * DPR; cv.height = H * DPR;
         ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     }
     resize();
-    addEventListener('resize', resize);
+    let _rt; addEventListener('resize', () => { clearTimeout(_rt); _rt = setTimeout(resize, 150); });
 
     /* --- build the spiral: each particle owns a "home" on a galaxy arm --- */
     for (let i = 0; i < N; i++) {
@@ -2274,8 +2368,10 @@ function initGalaxy() {
         p.vw = Math.random();                                       // personal timing: each star leaves the V at its own moment
     });
 
-    addEventListener('pointermove', e => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.on = true; }, { passive: true });
-    document.addEventListener('pointerleave', () => { mouse.on = false; mouse.x = mouse.y = -9999; });
+    if (FINE_POINTER) {
+        addEventListener('pointermove', e => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.on = true; }, { passive: true });
+        document.addEventListener('pointerleave', () => { mouse.on = false; mouse.x = mouse.y = -9999; });
+    }
 
     const BUCKETS = 6;
     const queue = Array.from({ length: BUCKETS }, () => ({
@@ -2295,11 +2391,15 @@ function initGalaxy() {
         if (running) { last = performance.now(); requestAnimationFrame(frame); }
     });
 
+    let lastDraw = 0;
     function frame(now) {
         if (!running) return;
-        const dt = Math.min(.05, (now - last) / 1000); last = now;
+        if (FRAME_MS && !STATIC && now - lastDraw < FRAME_MS - 2) { requestAnimationFrame(frame); return; }
+        lastDraw = now;
+        if (STATIC) now = t0 + 999999;                    // pin time: V long gone, no twinkle phase movement
+        const dt = STATIC ? 0 : Math.min(.05, (now - last) / 1000); last = now;
 
-        scrollSm += (scrollNow - scrollSm) * .07;
+        scrollSm += (scrollNow - scrollSm) * (STATIC ? 1 : .07);
         const docMax = Math.max(1, document.documentElement.scrollHeight - H);
         const sp = Math.min(1, scrollSm / docMax);               // 0..1 scroll progress
 
@@ -2312,7 +2412,7 @@ function initGalaxy() {
            out across the WHOLE screen as a quiet starry sky behind the content.
            k = 0 at the top, 1 once you are ~65% of a screen down. */
         const k      = Math.min(1, scrollSm / (H * .65));
-        const spread = k * k * (3 - 2 * k);                            // smoothstep 0..1
+        const spread = STATIC ? 1 : k * k * (3 - 2 * k);              // smoothstep 0..1  (static: always the calm sky)
 
         /* V timeline (ms after page start):
              0 - 900     stars are already in the V, but the canvas is still fading in
@@ -2334,11 +2434,13 @@ function initGalaxy() {
         const baseA = (light ? .55 : .95) * (1 - spread * .45);
 
         /* core glow */
-        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * .35);
-        g.addColorStop(0, light ? `rgba(0,0,0,${.10 * (1 - spread) * (1 - vHold)})` : `rgba(255,255,255,${.16 * (1 - spread) * (1 - vHold)})`);
-        g.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = g;
-        ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+        if (spread < .98) {
+            const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * .35);
+            g.addColorStop(0, light ? `rgba(0,0,0,${.10 * (1 - spread) * (1 - vHold)})` : `rgba(255,255,255,${.16 * (1 - spread) * (1 - vHold)})`);
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+        }
 
         const cosT = Math.cos(rot), sinT = Math.sin(rot);
         const PUSH = 130, PUSH2 = PUSH * PUSH;
@@ -2373,8 +2475,8 @@ function initGalaxy() {
             if (spread > 0) {
                 const m  = Math.max(0, Math.min(1, spread * p.dl * 1.15));   // per-star progress
                 const me = m * m * (3 - 2 * m);
-                const tx = p.fx * W + Math.sin(now * .00018 + p.dp) * 14;    // slow drift in the sky
-                const ty = ((p.fy * H * 1.2 - scrollSm * (.03 + p.z * .07)) % (H * 1.2) + H * 1.2) % (H * 1.2) - H * .1;
+                const tx = p.fx * W + (STATIC ? 0 : Math.sin(now * .00018 + p.dp) * 14);    // slow drift in the sky
+                const ty = ((p.fy * H * 1.2 - (STATIC ? 0 : scrollSm) * (.03 + p.z * .07)) % (H * 1.2) + H * 1.2) % (H * 1.2) - H * .1;
                 sx += (tx - sx) * me;
                 sy += (ty - sy) * me;
             }
@@ -2392,7 +2494,7 @@ function initGalaxy() {
 
             if (sx < -20 || sx > W + 20 || sy < -20 || sy > H + 20) continue;
 
-            const tw = .55 + .45 * Math.sin(now * .001 * p.twS + p.tw);
+            const tw = STATIC ? .8 : .55 + .45 * Math.sin(now * .001 * p.twS + p.tw);
             const near = 1 - p.r;                                 // brighter toward the core
             const alpha = Math.min(1, baseA * tw * (.35 + near * .9) * (.5 + p.z * .7));
             const s = (p.size * (.7 + p.z * .9) * (1 + near * .6)) * (1 - spread) + (p.sz * (.6 + p.z * .7)) * spread;
@@ -2450,9 +2552,17 @@ function initGalaxy() {
             ctx.fill();
             tq.n = 0;
         });
+        if (!STATIC) requestAnimationFrame(frame);
+    }
+
+    if (STATIC) {
+        /* one still frame now, and again only if the window is resized */
+        const once = () => requestAnimationFrame(frame);
+        addEventListener('resize', once);
+        once();
+    } else {
         requestAnimationFrame(frame);
     }
-    requestAnimationFrame(frame);
     requestAnimationFrame(() => cv.classList.add('ready'));
 }
 
@@ -2507,6 +2617,7 @@ if (typeof _origSetLang === 'function') {
     initMagnetic();
     initCounters();
     playChat();
+    initOffscreenPause();
     splitHeadline();
     initGalaxy();
     liftVeil();
