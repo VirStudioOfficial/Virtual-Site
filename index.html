@@ -129,9 +129,7 @@ button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
     position: sticky;
     top: 0;
     z-index: 50;
-    background: color-mix(in srgb, var(--bg) 82%, transparent);
-    backdrop-filter: blur(16px) saturate(140%);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    background: color-mix(in srgb, var(--bg) 94%, transparent);   /* no backdrop-filter: it re-blurs every frame over the moving stars */
     border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -703,7 +701,6 @@ footer span:first-child { color: var(--text); font-weight: 700; }
     z-index: -2;
     pointer-events: none;
     border-radius: 50%;
-    filter: blur(60px);
     will-change: transform;
 }
 
@@ -1062,6 +1059,12 @@ main, .topbar { position: relative; }
     transition: opacity .9s ease .1s, visibility 0s linear 1s;
 }
 .veil.gone { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* hold the hero entrance animations until the veil lifts, so they play in view, not behind it */
+html:not(.ready) .hero-copy > *,
+html:not(.ready) .hero h1,
+html:not(.ready) .hero h1.split .w,
+html:not(.ready) .hero-visual-wrap { animation-play-state: paused !important; }
 
 .veil-mark {
     width: 56px; height: 56px;
@@ -2317,9 +2320,9 @@ function initGalaxy() {
 
     const MOBILE = matchMedia('(max-width: 720px)').matches || !FINE_POINTER;
     const LOW    = (navigator.hardwareConcurrency || 8) <= 4;
-    const DPR   = MOBILE ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);   // dots are tiny: 1x is visually identical on phones
-    const N     = MOBILE ? 260 : (LOW ? 800 : 1300);   // particle count
-    const FRAME_MS = MOBILE ? 1000 / 30 : 0;           // phones: 30fps cap (half the CPU/GPU work)
+    const DPR   = 1;   // dots are tiny: 1x is visually identical on phones
+    const N     = MOBILE ? 260 : (LOW ? 400 : 650);   // particle count
+    const FRAME_MS = MOBILE ? 1000 / 30 : 1000 / 70;           // stars are slow: no need for full refresh rate
     const ARMS  = 3;
 
     let W = 0, H = 0;
@@ -2414,15 +2417,11 @@ function initGalaxy() {
         return el;
     });
 
-    /* very faint nebula haze behind the stars (desktop, dark mode only) */
-    const NEB = MOBILE ? null : (() => {
-        const el = document.createElement('canvas'); el.width = el.height = 256;
-        const c2 = el.getContext('2d'), g = c2.createRadialGradient(128, 128, 0, 128, 128, 128);
-        g.addColorStop(0, 'rgba(130,140,220,.5)'); g.addColorStop(.5, 'rgba(130,140,220,.12)'); g.addColorStop(1, 'rgba(130,140,220,0)');
-        c2.fillStyle = g; c2.fillRect(0, 0, 256, 256);
-        return el;
-    })();
-    const NEB_POS = [{ x: .2, y: .3, s: .9, a: .10 }, { x: .8, y: .6, s: 1.0, a: .08 }, { x: .5, y: .95, s: .8, a: .07 }];
+    /* very faint nebula haze: a static CSS background on the canvas (no per-frame cost) */
+    const NEB_CSS = 'radial-gradient(ellipse 55% 50% at 20% 30%, rgba(130,140,220,.05), transparent 70%),'
+                  + 'radial-gradient(ellipse 60% 55% at 80% 60%, rgba(130,140,220,.04), transparent 70%),'
+                  + 'radial-gradient(ellipse 50% 45% at 50% 95%, rgba(130,140,220,.035), transparent 70%)';
+    let _nebLight = null;
 
     /* a rare, quiet shooting star */
     let shoot = null, nextShoot = performance.now() + 7000 + Math.random() * 5000;
@@ -2479,17 +2478,7 @@ function initGalaxy() {
         const light = isLight();
         const baseA = (light ? .55 : .95) * (1 - spread * .45);
 
-        if (!light && NEB) {
-            const na = .55 + .45 * spread;
-            NEB_POS.forEach((nb, i) => {
-                const nsz = Math.max(W, H) * nb.s;
-                const nx = nb.x * W + Math.sin(now * .00005 + i * 2) * 30;
-                const ny = nb.y * H - scrollSm * .02 * (i + 1);
-                ctx.globalAlpha = nb.a * na;
-                ctx.drawImage(NEB, nx - nsz / 2, ny - nsz / 2, nsz, nsz);
-            });
-            ctx.globalAlpha = 1;
-        }
+        if (light !== _nebLight) { _nebLight = light; cv.style.background = (light || MOBILE) ? '' : NEB_CSS; }
 
         /* core glow */
         if (spread < .98) {
@@ -2562,7 +2551,7 @@ function initGalaxy() {
             q.x[q.n] = sx; q.y[q.n] = sy; q.s[q.n] = s; q.n++;
 
             /* brighter stars get a soft coloured glow (collected, painted once below) */
-            if (!light && p.size > 1.8 && spread < .6 && halo.n < HALO_MAX) {
+            if (!light && p.size > 1.95 && spread < .6 && halo.n < HALO_MAX) {
                 halo.x[halo.n] = sx; halo.y[halo.n] = sy; halo.s[halo.n] = s * 5;
                 halo.a[halo.n] = Math.min(.9, alpha * .8); halo.c[halo.n] = p.tint; halo.n++;
             }
@@ -2595,8 +2584,9 @@ function initGalaxy() {
                 ctx.fillStyle = `rgba(${RGB[c]},${(b + .5) / BUCKETS})`;
                 ctx.beginPath();
                 for (let k = 0; k < q.n; k++) {
-                    ctx.moveTo(q.x[k] + q.s[k], q.y[k]);
-                    ctx.arc(q.x[k], q.y[k], q.s[k], 0, 6.2832);
+                    const r = q.s[k];
+                    if (r < 1.1) ctx.rect(q.x[k] - r, q.y[k] - r, r * 2, r * 2);
+                    else { ctx.moveTo(q.x[k] + r, q.y[k]); ctx.arc(q.x[k], q.y[k], r, 0, 6.2832); }
                 }
                 ctx.fill();
                 q.n = 0;
@@ -2653,9 +2643,10 @@ function splitHeadline() {
 function liftVeil() {
     const v = document.getElementById('veil');
     if (!v) return;
-    const go = () => setTimeout(() => v.classList.add('gone'), 380);
+    const show = () => document.documentElement.classList.add('ready');   // starts the hero text animations
+    const go = () => setTimeout(() => { v.classList.add('gone'); setTimeout(show, 250); }, 380);
     (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(go);
-    setTimeout(() => v.classList.add('gone'), 2200);   // safety net
+    setTimeout(() => { v.classList.add('gone'); show(); }, 2200);   // safety net
     setTimeout(() => v.remove(), 3500);
 }
 
