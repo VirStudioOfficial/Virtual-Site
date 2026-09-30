@@ -554,32 +554,57 @@ section.wrap + section.wrap { margin-top: 96px; }
     50%      { height: 56px; opacity: 1; }
 }
 
-/* ---- Infrastructure ---- */
+/* ---- FAQ ---- */
 
-.stack-grid {
+.faq-list {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
+    gap: 12px;
+    max-width: 760px;
+    margin: 0 auto;
 }
 
-.stack-cell {
-    padding: 22px;
+.faq-item {
     border-radius: var(--radius-md);
     background: var(--card);
     border: 1px solid var(--border-subtle);
 }
 
-.stack-cell .num {
-    margin-bottom: 14px;
-    color: var(--muted);
-    font-family: 'Inter', sans-serif;
-    font-size: .78rem;
-    font-weight: 600;
-    letter-spacing: .06em;
+.faq-item summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 22px;
+    cursor: pointer;
+    list-style: none;
+    font-size: .98rem;
+    font-weight: 700;
 }
 
-.stack-cell strong { display: block; margin-bottom: 4px; font-size: .98rem; font-weight: 700; }
-.stack-cell p { color: var(--muted); font-size: .85rem; line-height: 1.8; }
+.faq-item summary::-webkit-details-marker { display: none; }
+
+.faq-item summary::after {
+    content: "+";
+    color: var(--muted);
+    font-size: 1.3rem;
+    line-height: 1;
+    transition: transform .25s ease;
+}
+
+.faq-item[open] summary::after { transform: rotate(45deg); }
+
+.faq-item summary:focus-visible {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: -2px;
+    border-radius: var(--radius-md);
+}
+
+.faq-item p {
+    padding: 0 22px 20px;
+    color: var(--muted);
+    font-size: .9rem;
+    line-height: 1.9;
+}
 
 /* ---- Final CTA ---- */
 
@@ -617,6 +642,10 @@ footer {
 }
 
 footer span:first-child { color: var(--text); font-weight: 700; }
+
+.footer-links { display: flex; gap: 18px; }
+.footer-links a { color: var(--muted); text-decoration: none; transition: color .2s ease; }
+.footer-links a:hover, .footer-links a:focus-visible { color: var(--text); }
 
 /* =========================================================
    Scroll reveal
@@ -858,7 +887,7 @@ html[dir="rtl"] .progress { transform-origin: right center; }
 /* ---- Spotlight cards: light follows the pointer ---- */
 
 .cap-row,
-.stack-cell,
+.faq-item,
 .spotlight,
 .final-cta {
     position: relative;
@@ -867,7 +896,7 @@ html[dir="rtl"] .progress { transform-origin: right center; }
 }
 
 .cap-row::before,
-.stack-cell::before,
+.faq-item::before,
 .spotlight::before,
 .final-cta::before {
     content: "";
@@ -881,13 +910,13 @@ html[dir="rtl"] .progress { transform-origin: right center; }
 }
 
 .cap-row:hover::before,
-.stack-cell:hover::before,
+.faq-item:hover::before,
 .spotlight:hover::before,
 .final-cta:hover::before { opacity: 1; }
 
 /* border highlight that follows the pointer */
 .cap-row::after,
-.stack-cell::after {
+.faq-item::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -904,7 +933,7 @@ html[dir="rtl"] .progress { transform-origin: right center; }
 }
 
 .cap-row:hover::after,
-.stack-cell:hover::after { opacity: .9; }
+.faq-item:hover::after { opacity: .9; }
 
 .cap-icon { transition: transform .35s cubic-bezier(.16,1,.3,1); }
 .cap-row:hover .cap-icon { transform: rotate(-8deg) scale(1.12); }
@@ -912,8 +941,8 @@ html[dir="rtl"] .progress { transform-origin: right center; }
 .tag { transition: background .2s ease, color .2s ease, transform .2s ease; }
 .cap-row:hover .tag { background: var(--input-focus); color: var(--text); }
 
-.stack-cell { transition: transform .25s ease; }
-.stack-cell:hover { transform: translateY(-4px); }
+.faq-item { transition: transform .25s ease; }
+.faq-item:hover { transform: translateY(-2px); }
 
 /* ---- Voice orb: expanding rings ---- */
 
@@ -951,9 +980,9 @@ html[dir="rtl"] .progress { transform-origin: right center; }
 
 @media (hover: none) {
     .cap-row:active,
-    .stack-cell:active { transform: scale(.985); }
+    .faq-item:active { transform: scale(.985); }
     .cap-row:active::before,
-    .stack-cell:active::before { opacity: 1; }
+    .faq-item:active::before { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -973,7 +1002,6 @@ html[dir="rtl"] .progress { transform-origin: right center; }
 @media (max-width: 920px) {
     .hero { grid-template-columns: 1fr; gap: 40px; padding: 56px 0 48px; }
     .spotlight { grid-template-columns: 1fr; padding: 30px 24px; }
-    .stack-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 640px) {
@@ -1237,7 +1265,7 @@ footer {
                 <button type="button" id="btnEn" onclick="setLang('en')">English</button>
             </div>
 
-            <button class="cta-small" data-i18n="nav.cta" onclick="goToApp()">شروع گفتگو</button>
+            <button class="cta-small" data-i18n="nav.cta" onclick="goToApp()">دانلود اپ</button>
         </div>
 
     </div>
@@ -1262,7 +1290,7 @@ footer {
         </p>
 
         <div class="hero-ctas">
-            <button class="btn-primary" data-i18n="hero.ctaPrimary" onclick="goToApp()">همین حالا امتحان کن</button>
+            <button class="btn-primary" data-i18n="hero.ctaPrimary" onclick="goToApp()">دانلود برای اندروید</button>
             <button class="btn-ghost" data-i18n="hero.ctaSecondary"
                 onclick="document.getElementById('capabilities').scrollIntoView({behavior:'smooth'})">قابلیت‌ها را ببین</button>
         </div>
@@ -1518,7 +1546,6 @@ footer {
             <h3 data-i18n="spot.title">حرف بزن، نه فقط تایپ کن</h3>
             <p data-i18n="spot.desc">تماس صوتی زنده‌ی Virtual Chat برای وقتی طراحی شده که دست‌هات بندن یا فقط راحت‌تری حرف بزنی. مکالمه پیوسته جریان داره — می‌تونی وسط حرفش بپری، موضوع رو عوض کنی، یا همون‌جا ازش بخوای که خداحافظی کنه و تماس رو قطع کنه.</p>
             <ul>
-                <li data-i18n="spot.li1">۱۰ صدای منتخب با لحن‌های متفاوت</li>
                 <li data-i18n="spot.li2">امکان قطع حرفش وسط جمله، مثل یک مکالمه‌ی واقعی</li>
                 <li data-i18n="spot.li3">ادامه‌ی گفتگوی متنی قبلی، بدون از نو توضیح دادن</li>
             </ul>
@@ -1540,32 +1567,27 @@ footer {
 
 <section class="wrap">
     <div class="section-head reveal">
-        <span class="eyebrow" data-i18n="stack.eyebrow">زیرساخت</span>
-        <h2 data-i18n="stack.title">ساخته‌شده برای پایداری</h2>
-        <p data-i18n="stack.lead">هر بخش از Virtual Chat یک وظیفه‌ی مشخص داره، تا وقتی یکی کند بشه یا از دسترس خارج بشه، بقیه سرپا بمونن.</p>
+        <span class="eyebrow" data-i18n="faq.eyebrow">سؤالات متداول</span>
+        <h2 data-i18n="faq.title">قبل از شروع، شاید بخوای بدونی</h2>
     </div>
 
-    <div class="stack-grid">
-        <div class="stack-cell reveal">
-            <div class="num">01</div>
-            <strong data-i18n="stack.c1.name">موتور گفتگو</strong>
-            <p data-i18n="stack.c1.desc">پردازش پیام، ابزارها، و پاسخ زنده</p>
-        </div>
-        <div class="stack-cell reveal">
-            <div class="num">02</div>
-            <strong data-i18n="stack.c2.name">هسته‌ی صوتی</strong>
-            <p data-i18n="stack.c2.desc">اتصال پایدار برای تماس‌های زنده</p>
-        </div>
-        <div class="stack-cell reveal">
-            <div class="num">03</div>
-            <strong data-i18n="stack.c3.name">حافظه‌ی ابری</strong>
-            <p data-i18n="stack.c3.desc">حساب کاربری و گفتگوهای همگام‌شده</p>
-        </div>
-        <div class="stack-cell reveal">
-            <div class="num">04</div>
-            <strong data-i18n="stack.c4.name">اطلاع‌رسانی</strong>
-            <p data-i18n="stack.c4.desc">تغییرات و رفع‌اشکال‌های تازه</p>
-        </div>
+    <div class="faq-list">
+        <details class="faq-item reveal">
+            <summary data-i18n="faq.q1.q">فقط چت متنیه؟</summary>
+            <p data-i18n="faq.q1.a">نه. علاوه بر گفتگوی متنی، می‌تونه باهات صحبت زنده کنه، فایل و کد رو ویرایش کنه و توی وب جستجو کنه.</p>
+        </details>
+        <details class="faq-item reveal">
+            <summary data-i18n="faq.q2.q">تماس صوتی چطور کار می‌کنه؟</summary>
+            <p data-i18n="faq.q2.a">می‌تونی وسط حرفش بپری و گفتگوی متنی قبلی‌ت رو بدون توضیح دوباره ادامه بدی.</p>
+        </details>
+        <details class="faq-item reveal">
+            <summary data-i18n="faq.q3.q">گفتگوهام ذخیره می‌شن؟</summary>
+            <p data-i18n="faq.q3.a">بله، گفتگوها به حساب کاربری‌ت وصلن و همگام می‌شن.</p>
+        </details>
+        <details class="faq-item reveal">
+            <summary data-i18n="faq.q4.q">چطور نصبش کنم؟</summary>
+            <p data-i18n="faq.q4.a">نسخه‌ی اندروید رو با دکمه‌ی دانلود همین صفحه بگیر (فایل APK از گیت‌هاب). ممکنه اندروید ازت بخواد نصب از منابع ناشناس رو برای مرورگرت فعال کنی.</p>
+        </details>
     </div>
 </section>
 
@@ -1577,8 +1599,8 @@ footer {
 <section class="wrap">
     <div class="final-cta reveal">
         <h2 data-i18n="final.title">آماده‌ای شروع کنی؟</h2>
-        <p data-i18n="final.desc">بدون نیاز به نصب یا ثبت‌نام، همین الان اولین گفتگوت رو با Virtual Chat شروع کن.</p>
-        <button class="btn-primary" data-i18n="final.cta" onclick="goToApp()">رفتن به Virtual Chat</button>
+        <p data-i18n="final.desc">اپ اندروید Virtual Chat رو دانلود کن و اولین گفتگوت رو همین الان شروع کن.</p>
+        <button class="btn-primary" data-i18n="final.cta" onclick="goToApp()">دانلود برای اندروید</button>
     </div>
 </section>
 
@@ -1586,7 +1608,10 @@ footer {
 
 <footer>
     <span>Virtual Chat</span>
-    <span data-i18n="footer.note">این صفحه فقط برای معرفی قابلیت‌هاست.</span>
+    <span class="footer-links">
+        <a href="https://github.com/VirStudioOfficial/VisualChatApp/releases/latest/download/VirtualChat.apk" target="_blank" rel="noopener" data-i18n="footer.download">دانلود اپ اندروید</a>
+        <a href="https://github.com/VirStudioOfficial" target="_blank" rel="noopener" data-i18n="footer.github">گیت‌هاب</a>
+    </span>
     <span data-i18n="footer.copyright">© ۲۰۲۶ VirtualStudio. تمامی حقوق محفوظ است.</span>
 </footer>
 
@@ -1601,7 +1626,7 @@ const translations = {
 
     fa: {
 
-        'nav.cta': 'شروع گفتگو',
+        'nav.cta': 'دانلود اپ',
 
         'hero.kicker': 'دستیار هوش مصنوعی فارسی',
 
@@ -1612,7 +1637,7 @@ const translations = {
             'Virtual Chat یک اپلیکیشن چت هوش مصنوعیه که علاوه بر گفتگوی متنی، می‌تونه باهات صحبت زنده کنه، فایل و کد رو ویرایش کنه، و توی وب جستجو کنه — همه در یک رابط ساده.',
 
         'hero.ctaPrimary':
-            'همین حالا امتحان کن',
+            'دانلود برای اندروید',
 
         'hero.ctaSecondary':
             'قابلیت‌ها را ببین',
@@ -1761,59 +1786,56 @@ const translations = {
         'spot.desc':
             'تماس صوتی زنده‌ی Virtual Chat برای وقتی طراحی شده که دست‌هات بندن یا فقط راحت‌تری حرف بزنی. مکالمه پیوسته جریان داره — می‌تونی وسط حرفش بپری، موضوع رو عوض کنی، یا همون‌جا ازش بخوای که خداحافظی کنه و تماس رو قطع کنه.',
 
-        'spot.li1':
-            '۱۰ صدای منتخب با لحن‌های متفاوت',
-
         'spot.li2':
             'امکان قطع حرفش وسط جمله، مثل یک مکالمه‌ی واقعی',
 
         'spot.li3':
             'ادامه‌ی گفتگوی متنی قبلی، بدون از نو توضیح دادن',
 
-        'stack.eyebrow':
-            'زیرساخت',
+        'faq.eyebrow':
+            'سؤالات متداول',
 
-        'stack.title':
-            'ساخته‌شده برای پایداری',
+        'faq.title':
+            'قبل از شروع، شاید بخوای بدونی',
 
-        'stack.lead':
-            'هر بخش از Virtual Chat یک وظیفه‌ی مشخص داره، تا وقتی یکی کند بشه یا از دسترس خارج بشه، بقیه سرپا بمونن.',
+        'faq.q1.q':
+            'فقط چت متنیه؟',
 
-        'stack.c1.name':
-            'موتور گفتگو',
+        'faq.q1.a':
+            'نه. علاوه بر گفتگوی متنی، می‌تونه باهات صحبت زنده کنه، فایل و کد رو ویرایش کنه و توی وب جستجو کنه.',
 
-        'stack.c1.desc':
-            'پردازش پیام، ابزارها، و پاسخ زنده',
+        'faq.q2.q':
+            'تماس صوتی چطور کار می‌کنه؟',
 
-        'stack.c2.name':
-            'هسته‌ی صوتی',
+        'faq.q2.a':
+            'می‌تونی وسط حرفش بپری و گفتگوی متنی قبلی‌ت رو بدون توضیح دوباره ادامه بدی.',
 
-        'stack.c2.desc':
-            'اتصال پایدار برای تماس‌های زنده',
+        'faq.q3.q':
+            'گفتگوهام ذخیره می‌شن؟',
 
-        'stack.c3.name':
-            'حافظه‌ی ابری',
+        'faq.q3.a':
+            'بله، گفتگوها به حساب کاربری‌ت وصلن و همگام می‌شن.',
 
-        'stack.c3.desc':
-            'حساب کاربری و گفتگوهای همگام‌شده',
+        'faq.q4.q':
+            'چطور نصبش کنم؟',
 
-        'stack.c4.name':
-            'اطلاع‌رسانی',
-
-        'stack.c4.desc':
-            'تغییرات و رفع‌اشکال‌های تازه',
+        'faq.q4.a':
+            'نسخه‌ی اندروید رو با دکمه‌ی دانلود همین صفحه بگیر (فایل APK از گیت‌هاب). ممکنه اندروید ازت بخواد نصب از منابع ناشناس رو برای مرورگرت فعال کنی.',
 
         'final.title':
             'آماده‌ای شروع کنی؟',
 
         'final.desc':
-            'بدون نیاز به نصب یا ثبت‌نام، همین الان اولین گفتگوت رو با Virtual Chat شروع کن.',
+            'اپ اندروید Virtual Chat رو دانلود کن و اولین گفتگوت رو همین الان شروع کن.',
 
         'final.cta':
-            'رفتن به Virtual Chat',
+            'دانلود برای اندروید',
 
-        'footer.note':
-            'این صفحه فقط برای معرفی قابلیت‌هاست.',
+        'footer.download':
+            'دانلود اپ اندروید',
+
+        'footer.github':
+            'گیت‌هاب',
 
         'footer.copyright':
             '© ۲۰۲۶ VirtualStudio. تمامی حقوق محفوظ است.'
@@ -1823,7 +1845,7 @@ const translations = {
     en: {
 
         'nav.cta':
-            'Start chatting',
+            'Download app',
 
         'hero.kicker':
             'AI assistant, built for Persian speakers',
@@ -1835,7 +1857,7 @@ const translations = {
             'Virtual Chat is an AI chat app that goes beyond text — talk to it live by voice, have it edit code and files, and let it search the web for anything current. All in one simple interface.',
 
         'hero.ctaPrimary':
-            'Try it now',
+            'Download for Android',
 
         'hero.ctaSecondary':
             'See capabilities',
@@ -1984,59 +2006,56 @@ const translations = {
         'spot.desc':
             'Live voice calls in Virtual Chat are built for when your hands are busy, or you’d simply rather talk. The conversation flows continuously — interrupt it mid-sentence, change the subject, or just ask it to say goodbye and end the call.',
 
-        'spot.li1':
-            '10 curated voices and tones',
-
         'spot.li2':
             'Interrupt it mid-sentence, like a real conversation',
 
         'spot.li3':
             'Picks up your earlier text chat without re-explaining',
 
-        'stack.eyebrow':
-            'Infrastructure',
+        'faq.eyebrow':
+            'FAQ',
 
-        'stack.title':
-            'Built for reliability',
+        'faq.title':
+            'Before you start',
 
-        'stack.lead':
-            'Every part of Virtual Chat does one job, so if one slows down or goes offline, the rest keeps running.',
+        'faq.q1.q':
+            'Is it just a text chat?',
 
-        'stack.c1.name':
-            'Chat engine',
+        'faq.q1.a':
+            'No. Besides text conversations, it can talk with you live, edit files and code, and search the web.',
 
-        'stack.c1.desc':
-            'Message handling, tools, live replies',
+        'faq.q2.q':
+            'How does the voice call work?',
 
-        'stack.c2.name':
-            'Voice core',
+        'faq.q2.a':
+            'Interrupt it mid-sentence and continue your earlier text chat without re-explaining.',
 
-        'stack.c2.desc':
-            'Stable connection for live calls',
+        'faq.q3.q':
+            'Are my conversations saved?',
 
-        'stack.c3.name':
-            'Cloud memory',
+        'faq.q3.a':
+            'Yes, conversations are tied to your account and synced.',
 
-        'stack.c3.desc':
-            'Accounts and synced conversations',
+        'faq.q4.q':
+            'How do I install it?',
 
-        'stack.c4.name':
-            'Notifications',
-
-        'stack.c4.desc':
-            'Fresh updates and bug fixes',
+        'faq.q4.a':
+            'Get the Android version with the download button on this page (an APK from GitHub). Android may ask you to allow installs from unknown sources for your browser.',
 
         'final.title':
             'Ready to start?',
 
         'final.desc':
-            'No install, no signup required — start your first conversation with Virtual Chat right now.',
+            'Download the Virtual Chat Android app and start your first conversation right now.',
 
         'final.cta':
-            'Go to Virtual Chat',
+            'Download for Android',
 
-        'footer.note':
-            'This page is for feature reference only.',
+        'footer.download':
+            'Download Android app',
+
+        'footer.github':
+            'GitHub',
 
         'footer.copyright':
             '© 2026 VirtualStudio. All rights reserved.'
@@ -2103,7 +2122,7 @@ function initReveal() {
     }, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
 
     items.forEach((el, index) => {
-        if (el.classList.contains('cap-row') || el.classList.contains('stack-cell')) {
+        if (el.classList.contains('cap-row') || el.classList.contains('faq-item')) {
             el.style.transitionDelay = `${Math.min(index * .05, .25)}s`;
         }
         observer.observe(el);
@@ -2143,7 +2162,7 @@ function initCursorGlow() {
 
 /* spotlight: feed pointer position into each card as CSS vars */
 function initSpotlight() {
-    const cards = document.querySelectorAll('.cap-row, .stack-cell, .spotlight, .final-cta');
+    const cards = document.querySelectorAll('.cap-row, .faq-item, .spotlight, .final-cta');
 
     cards.forEach(card => {
         const move = (clientX, clientY) => {
@@ -2265,7 +2284,7 @@ function initMagnetic() {
 function initCounters() {
     if (REDUCED || !('IntersectionObserver' in window)) return;
 
-    const nums = document.querySelectorAll('.stack-cell .num');
+    const nums = document.querySelectorAll('.faq-item .num');
     const io = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (!entry.isIntersecting) return;
@@ -2332,10 +2351,12 @@ function initGalaxy() {
         pts.push({
             r, angle,
             z:     Math.random(),                               // depth 0..1
-            size:  Math.random() * 1.5 + .35,
+            size:  .3 + Math.pow(Math.random(), 3.2) * 2.1,      // many faint stars, a few bright ones
             tw:    Math.random() * Math.PI * 2,                 // twinkle phase
-            twS:   .6 + Math.random() * 1.6,
-            hue:   Math.random() < .12 ? (Math.random() < .5 ? 18 : 205) : 0,  // few warm/cool stars
+            tw2:   Math.random() * Math.PI * 2,
+            twS:   .5 + Math.random() * 1.2,
+            twA:   .08 + Math.random() * .4,                    // each star twinkles by its own amount
+            tint:  (() => { const u = Math.random(); return u < .52 ? 0 : u < .74 ? 1 : u < .90 ? 2 : 3; })(),   // white / blue-white / yellow-white / orange
             ox: 0, oy: 0,                                       // mouse push offset
             fx: Math.random(), fy: Math.random(),               // its spot in the scattered sky (fraction of screen)
             dp: Math.random() * Math.PI * 2,                    // drift phase
@@ -2374,12 +2395,37 @@ function initGalaxy() {
     }
 
     const BUCKETS = 6;
-    const queue = Array.from({ length: BUCKETS }, () => ({
+    /* 4 star colours x 6 brightness buckets, each painted in a single pass */
+    const queue = Array.from({ length: 4 }, () => Array.from({ length: BUCKETS }, () => ({
         x: new Float32Array(N), y: new Float32Array(N), s: new Float32Array(N), n: 0
-    }));
+    })));
 
-    const mk = n => ({ x: new Float32Array(n), y: new Float32Array(n), s: new Float32Array(n), n: 0 });
-    const halo = mk(160), warm = mk(N), cool = mk(N);
+    const HALO_MAX = 160;
+    const halo = { x: new Float32Array(HALO_MAX), y: new Float32Array(HALO_MAX), s: new Float32Array(HALO_MAX),
+                   a: new Float32Array(HALO_MAX), c: new Uint8Array(HALO_MAX), n: 0 };
+
+    /* soft glow sprites for bright stars, one per star colour */
+    const GLOW_RGB = ['255,255,255', '185,212,255', '255,243,212', '255,204,158'];
+    const glow = GLOW_RGB.map(c => {
+        const el = document.createElement('canvas'); el.width = el.height = 64;
+        const c2 = el.getContext('2d'), g = c2.createRadialGradient(32, 32, 0, 32, 32, 32);
+        g.addColorStop(0, `rgba(${c},.55)`); g.addColorStop(.25, `rgba(${c},.16)`); g.addColorStop(1, `rgba(${c},0)`);
+        c2.fillStyle = g; c2.fillRect(0, 0, 64, 64);
+        return el;
+    });
+
+    /* very faint nebula haze behind the stars (desktop, dark mode only) */
+    const NEB = MOBILE ? null : (() => {
+        const el = document.createElement('canvas'); el.width = el.height = 256;
+        const c2 = el.getContext('2d'), g = c2.createRadialGradient(128, 128, 0, 128, 128, 128);
+        g.addColorStop(0, 'rgba(130,140,220,.5)'); g.addColorStop(.5, 'rgba(130,140,220,.12)'); g.addColorStop(1, 'rgba(130,140,220,0)');
+        c2.fillStyle = g; c2.fillRect(0, 0, 256, 256);
+        return el;
+    })();
+    const NEB_POS = [{ x: .2, y: .3, s: .9, a: .10 }, { x: .8, y: .6, s: 1.0, a: .08 }, { x: .5, y: .95, s: .8, a: .07 }];
+
+    /* a rare, quiet shooting star */
+    let shoot = null, nextShoot = performance.now() + 7000 + Math.random() * 5000;
 
     let rot = 0, tilt = .55, scrollNow = 0, scrollSm = 0;
     addEventListener('scroll', () => { scrollNow = scrollY; }, { passive: true });
@@ -2432,6 +2478,18 @@ function initGalaxy() {
         ctx.clearRect(0, 0, W, H);
         const light = isLight();
         const baseA = (light ? .55 : .95) * (1 - spread * .45);
+
+        if (!light && NEB) {
+            const na = .55 + .45 * spread;
+            NEB_POS.forEach((nb, i) => {
+                const nsz = Math.max(W, H) * nb.s;
+                const nx = nb.x * W + Math.sin(now * .00005 + i * 2) * 30;
+                const ny = nb.y * H - scrollSm * .02 * (i + 1);
+                ctx.globalAlpha = nb.a * na;
+                ctx.drawImage(NEB, nx - nsz / 2, ny - nsz / 2, nsz, nsz);
+            });
+            ctx.globalAlpha = 1;
+        }
 
         /* core glow */
         if (spread < .98) {
@@ -2494,64 +2552,76 @@ function initGalaxy() {
 
             if (sx < -20 || sx > W + 20 || sy < -20 || sy > H + 20) continue;
 
-            const tw = STATIC ? .8 : .55 + .45 * Math.sin(now * .001 * p.twS + p.tw);
+            const tw = STATIC ? .85 : 1 - p.twA * (.5 + .5 * Math.sin(now * .001 * p.twS + p.tw)) * (.65 + .35 * Math.sin(now * .00037 * p.twS + p.tw2));
             const near = 1 - p.r;                                 // brighter toward the core
             const alpha = Math.min(1, baseA * tw * (.35 + near * .9) * (.5 + p.z * .7));
             const s = (p.size * (.7 + p.z * .9) * (1 + near * .6)) * (1 - spread) + (p.sz * (.6 + p.z * .7)) * spread;
 
-            if (p.hue) {
-                /* rare tinted stars: warm / cool, one path each */
-                const tq = p.hue === 18 ? warm : cool;
-                if (tq.n < tq.x.length) { tq.x[tq.n] = sx; tq.y[tq.n] = sy; tq.s[tq.n] = s; tq.n++; }
-            } else {
-                /* plain stars: queue into one of 6 alpha buckets, painted in a single pass each */
-                const b = Math.min(BUCKETS - 1, (alpha * BUCKETS) | 0);
-                const q = queue[b];
-                q.x[q.n] = sx; q.y[q.n] = sy; q.s[q.n] = s; q.n++;
-            }
+            const bk = Math.min(BUCKETS - 1, (alpha * BUCKETS) | 0);
+            const q = queue[p.tint][bk];
+            q.x[q.n] = sx; q.y[q.n] = sy; q.s[q.n] = s; q.n++;
 
-            /* occasional bright star gets a soft halo (collected, painted once below) */
-            if (p.size > 1.75 && tw > .88 && spread < .5 && halo.n < halo.x.length) {
-                halo.x[halo.n] = sx; halo.y[halo.n] = sy; halo.s[halo.n] = s * 2.4; halo.n++;
+            /* brighter stars get a soft coloured glow (collected, painted once below) */
+            if (!light && p.size > 1.8 && spread < .6 && halo.n < HALO_MAX) {
+                halo.x[halo.n] = sx; halo.y[halo.n] = sy; halo.s[halo.n] = s * 5;
+                halo.a[halo.n] = Math.min(.9, alpha * .8); halo.c[halo.n] = p.tint; halo.n++;
             }
         }
 
-        if (halo.n) {
-            ctx.fillStyle = light ? 'rgba(20,20,26,.045)' : 'rgba(255,255,255,.05)';
-            ctx.beginPath();
-            for (let k = 0; k < halo.n; k++) {
-                ctx.moveTo(halo.x[k] + halo.s[k], halo.y[k]);
-                ctx.arc(halo.x[k], halo.y[k], halo.s[k], 0, 6.2832);
+        const RGB = light
+            ? ['20,20,26', '30,50,95', '80,62,20', '100,50,18']
+            : ['255,255,255', '185,212,255', '255,243,212', '255,204,158'];
+
+        for (let i = 0; i < halo.n; i++) {
+            const hs = halo.s[i];
+            ctx.globalAlpha = halo.a[i];
+            ctx.drawImage(glow[halo.c[i]], halo.x[i] - hs, halo.y[i] - hs, hs * 2, hs * 2);
+            if (hs > 11) {                       /* tiny diffraction cross on the very brightest */
+                ctx.strokeStyle = `rgba(${GLOW_RGB[halo.c[i]]},${halo.a[i] * .45})`;
+                ctx.lineWidth = .6;
+                ctx.beginPath();
+                ctx.moveTo(halo.x[i] - hs * 1.1, halo.y[i]); ctx.lineTo(halo.x[i] + hs * 1.1, halo.y[i]);
+                ctx.moveTo(halo.x[i], halo.y[i] - hs * 1.1); ctx.lineTo(halo.x[i], halo.y[i] + hs * 1.1);
+                ctx.stroke();
             }
-            ctx.fill();
-            halo.n = 0;
+        }
+        ctx.globalAlpha = 1;
+        halo.n = 0;
+
+        for (let c = 0; c < 4; c++) {
+            for (let b = 0; b < BUCKETS; b++) {
+                const q = queue[c][b];
+                if (!q.n) continue;
+                ctx.fillStyle = `rgba(${RGB[c]},${(b + .5) / BUCKETS})`;
+                ctx.beginPath();
+                for (let k = 0; k < q.n; k++) {
+                    ctx.moveTo(q.x[k] + q.s[k], q.y[k]);
+                    ctx.arc(q.x[k], q.y[k], q.s[k], 0, 6.2832);
+                }
+                ctx.fill();
+                q.n = 0;
+            }
         }
 
-        /* flush the buckets */
-        for (let b = 0; b < BUCKETS; b++) {
-            const q = queue[b];
-            if (!q.n) continue;
-            const a = (b + .5) / BUCKETS;
-            ctx.fillStyle = light ? `rgba(20,20,26,${a})` : `rgba(255,255,255,${a})`;
-            ctx.beginPath();
-            for (let k = 0; k < q.n; k++) {
-                ctx.moveTo(q.x[k] + q.s[k], q.y[k]);
-                ctx.arc(q.x[k], q.y[k], q.s[k], 0, 6.2832);
+        if (!STATIC && !light) {
+            if (!shoot && now > nextShoot && tt > 5200) {
+                const dir = Math.random() < .5 ? -1 : 1, spd = Math.max(W, 600) * (.7 + Math.random() * .4);
+                shoot = { x: W * (dir > 0 ? .1 + Math.random() * .4 : .5 + Math.random() * .4), y: H * (.05 + Math.random() * .3),
+                          vx: dir * spd, vy: spd * (.3 + Math.random() * .25), t: 0, dur: .7 + Math.random() * .4 };
             }
-            ctx.fill();
-            q.n = 0;
+            if (shoot) {
+                shoot.t += dt; shoot.x += shoot.vx * dt; shoot.y += shoot.vy * dt;
+                const f = shoot.t / shoot.dur;
+                if (f >= 1) { shoot = null; nextShoot = now + 9000 + Math.random() * 9000; }
+                else {
+                    const tl = .13, sa = Math.sin(Math.PI * f) * .85;
+                    const gs = ctx.createLinearGradient(shoot.x, shoot.y, shoot.x - shoot.vx * tl, shoot.y - shoot.vy * tl);
+                    gs.addColorStop(0, `rgba(255,255,255,${sa})`); gs.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.strokeStyle = gs; ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+                    ctx.beginPath(); ctx.moveTo(shoot.x, shoot.y); ctx.lineTo(shoot.x - shoot.vx * tl, shoot.y - shoot.vy * tl); ctx.stroke();
+                }
+            }
         }
-        [[warm, 18], [cool, 205]].forEach(([tq, hue]) => {
-            if (!tq.n) return;
-            ctx.fillStyle = `hsla(${hue}, 80%, ${light ? 35 : 78}%, ${light ? .7 : .9})`;
-            ctx.beginPath();
-            for (let k = 0; k < tq.n; k++) {
-                ctx.moveTo(tq.x[k] + tq.s[k], tq.y[k]);
-                ctx.arc(tq.x[k], tq.y[k], tq.s[k], 0, 6.2832);
-            }
-            ctx.fill();
-            tq.n = 0;
-        });
         if (!STATIC) requestAnimationFrame(frame);
     }
 
